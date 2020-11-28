@@ -1,0 +1,27 @@
+{
+  "name": "pskocht-stats-be",
+  "version": "1.0.0",
+  "description": "Backend für PietSmiet Kocht stats",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EmKaCe/pskocht-stats.git"
+  },
+  "author": "Emre Kaan Çetin (EmKaCe)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EmKaCe/pskocht-stats/issues"
+  },
+  "homepage": "https://github.com/EmKaCe/pskocht-stats#readme",
+  "dependencies": {
+    "@types/express": "^4.17.9",
+    "@types/node": "^14.14.10",
+    "axios": "^0.21.0",
+    "eslint": "^7.14.0",
+    "express": "^4.17.1",
+    "typescript": "^4.1.2"
+  }
+}

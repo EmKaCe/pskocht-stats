@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import express from "express";
-import { getStats, intializeRedis } from "./dbConnector";
+import { addDish, getStats, intializeRedis, setDish } from "./dbConnector";
 import { json } from "body-parser";
 
 const config = JSON.parse(readFileSync("./config.json").toString());
@@ -25,12 +25,20 @@ const isDish = (toCheck: object): toCheck is dish => {
     return false;
 };
 
-if (config.port) {
+if (config.port && config.authSecret && config.dbHost && config.dbPort) {
     intializeRedis(config.dbHost, config.dbPort);
     const app = express();
     const jsonParser = json();
 
     app.use(express.static("./build"));
+
+    app.get("/stats/auth", (req, res) => {
+        if (req.headers.authorization == config.authSecret) {
+            res.status(200).send();
+        } else {
+            res.status(401).send();
+        }
+    });
 
     app.get("/stats", (req, res) => {
         getStats().then((dishes) => {
@@ -40,10 +48,35 @@ if (config.port) {
     });
 
     app.post("/stats/add", jsonParser, (req, res) => {
-        if (isDish(req.body)) {
-            res.status(201).send();
+        if (req.headers.authorization == config.authSecret) {
+            if (isDish(req.body)) {
+                addDish(req.body).then(() => {
+                    res.status(201).send();
+                }).catch(() => {
+                    res.status(500).send();
+                });
+            } else {
+                res.status(400).send();
+            }
         } else {
-            res.status(400).send();
+            res.status(401).send();
+        }
+    });
+
+    app.post("/stats/:index/set", jsonParser, (req, res) => {
+        if (req.headers.authorization == config.authSecret) {
+            const index = Math.floor(parseInt(req.params.index));
+            if (isNaN(index) && !isDish(req.body)) {
+                res.status(400).send();
+            } else {
+                setDish(index, req.body).then(() => {
+                    res.status(200).send();
+                }).catch(() => {
+                    res.status(500).send();
+                });
+            }
+        } else {
+            res.status(401).send();
         }
     });
 

@@ -33,7 +33,7 @@ if (config.port && config.authSecret && config.dbHost && config.dbPort) {
     app.use(express.static("./build"));
 
     app.get("/stats/auth", (req, res) => {
-        if (req.headers.authorization == config.authSecret) {
+        if (req.headers.authorization === config.authSecret) {
             res.status(200).send();
         } else {
             res.status(401).send();
@@ -47,8 +47,29 @@ if (config.port && config.authSecret && config.dbHost && config.dbPort) {
         });
     });
 
+    app.post("/stats/addMultiple", jsonParser, (req, res) => {
+        if (req.headers.authorization === config.authSecret) {
+            const dishes: Array<dish> = req.body;
+            dishes.forEach((dish) => {
+                if (!isDish(dish)) {
+                    res.status(400).send();
+                    return;
+                }
+            });
+            dishes.forEach((dish) => {
+                addDish(dish).catch(() => {
+                    res.status(500).send();
+                    return;
+                });
+            });
+            res.status(201).send();
+        } else {
+            res.status(401).send();
+        }
+    });
+
     app.post("/stats/add", jsonParser, (req, res) => {
-        if (req.headers.authorization == config.authSecret) {
+        if (req.headers.authorization === config.authSecret) {
             if (isDish(req.body)) {
                 addDish(req.body).then(() => {
                     res.status(201).send();
@@ -64,7 +85,7 @@ if (config.port && config.authSecret && config.dbHost && config.dbPort) {
     });
 
     app.post("/stats/:index/set", jsonParser, (req, res) => {
-        if (req.headers.authorization == config.authSecret) {
+        if (req.headers.authorization === config.authSecret) {
             const index = Math.floor(parseInt(req.params.index));
             if (isNaN(index) && !isDish(req.body)) {
                 res.status(400).send();

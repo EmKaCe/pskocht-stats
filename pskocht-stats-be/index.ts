@@ -47,7 +47,7 @@ if (config.port && config.authSecret && config.dbHost && config.dbPort) {
         });
     });
 
-    app.post("/stats/addMultiple", jsonParser, (req, res) => {
+    app.post("/stats/addMultiple", jsonParser, async (req, res) => {
         if (req.headers.authorization === config.authSecret) {
             const dishes: Array<dish> = req.body;
             dishes.forEach((dish) => {
@@ -56,12 +56,14 @@ if (config.port && config.authSecret && config.dbHost && config.dbPort) {
                     return;
                 }
             });
-            dishes.forEach((dish) => {
-                addDish(dish).catch(() => {
+            for (let i = 0; i < dishes.length; i++) {
+                try {
+                    await addDish(dishes[i]);
+                } catch (e) {
                     res.status(500).send();
                     return;
-                });
-            });
+                }
+            }
             res.status(201).send();
         } else {
             res.status(401).send();

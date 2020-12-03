@@ -20,11 +20,18 @@ export const getStats = async (): Promise<string[]> => {
 
 export const addDish = async (dish: dish) => {
     return new Promise((resolve, reject) => {
-        client.rpush("dishes", JSON.stringify(dish), (err, res) => {
+        client.llen("dishes", (err, lenres) => {
             if (err) {
                 reject(err);
             } else {
-                resolve(res);
+                dish.id = 99999 - lenres;
+                client.lpush("dishes", JSON.stringify(dish), (err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                });
             }
         });
     });
